@@ -23,7 +23,9 @@ import {
   FileUp, 
   Linkedin, 
   Loader2, 
-  Target 
+  Target,
+  BookOpen,
+  Users
 } from "lucide-react";
 import { sampleCareerPaths, sampleUserProfile, calculateSkillGap } from "@/lib/data";
 import { Link } from "react-router-dom";
