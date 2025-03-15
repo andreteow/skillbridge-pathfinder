@@ -1,4 +1,3 @@
-
 export interface Skill {
   id: string;
   name: string;
@@ -13,6 +12,8 @@ export interface UserProfile {
   experience: number; // years
   education: string;
   skills: Skill[];
+  email?: string;
+  clerkId?: string;
 }
 
 export interface CareerPath {

@@ -5,19 +5,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
-  BarChart3, BookOpen, Home, LogIn, Menu, X
+  BarChart3, BookOpen, Home, LogIn, Menu, X, UserPlus
 } from "lucide-react";
+import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { toast } = useToast();
-
-  const handleSignIn = () => {
-    toast({
-      title: "Sign In",
-      description: "Sign in functionality will be implemented in a future update.",
-    });
-  };
 
   return (
     <header className="border-b bg-white sticky top-0 z-50">
@@ -47,14 +41,30 @@ const Header = () => {
 
         {/* User Actions */}
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="outline" onClick={handleSignIn} className="flex items-center gap-1.5">
-            <LogIn size={18} />
-            <span>Sign In</span>
-          </Button>
-          <Avatar className="h-9 w-9 border cursor-pointer">
-            <AvatarImage src="" />
-            <AvatarFallback className="bg-skill-primary text-white">GB</AvatarFallback>
-          </Avatar>
+          <SignedOut>
+            <Button variant="outline" asChild className="flex items-center gap-1.5">
+              <Link to="/sign-in">
+                <LogIn size={18} />
+                <span>Sign In</span>
+              </Link>
+            </Button>
+            <Button asChild className="flex items-center gap-1.5">
+              <Link to="/waitlist">
+                <UserPlus size={18} />
+                <span>Join Waitlist</span>
+              </Link>
+            </Button>
+          </SignedOut>
+          <SignedIn>
+            <UserButton 
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  userButtonAvatarBox: "h-9 w-9 border border-gray-200"
+                }
+              }}
+            />
+          </SignedIn>
         </div>
 
         {/* Mobile Menu Button */}
@@ -96,14 +106,36 @@ const Header = () => {
               <BookOpen size={18} />
               <span>Learning Paths</span>
             </Link>
-            <Button 
-              variant="outline" 
-              className="mt-2 w-full justify-start"
-              onClick={handleSignIn}
-            >
-              <LogIn size={18} className="mr-2" />
-              <span>Sign In</span>
-            </Button>
+            <SignedOut>
+              <Link 
+                to="/sign-in" 
+                className="flex items-center gap-2 p-2 rounded-md hover:bg-gray-100"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <LogIn size={18} />
+                <span>Sign In</span>
+              </Link>
+              <Link 
+                to="/waitlist" 
+                className="flex items-center gap-2 p-2 rounded-md hover:bg-gray-100 mt-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <UserPlus size={18} />
+                <span>Join Waitlist</span>
+              </Link>
+            </SignedOut>
+            <SignedIn>
+              <div className="mt-2 p-2">
+                <UserButton 
+                  afterSignOutUrl="/"
+                  appearance={{
+                    elements: {
+                      userButtonAvatarBox: "h-9 w-9 border border-gray-200"
+                    }
+                  }}
+                />
+              </div>
+            </SignedIn>
           </nav>
         </div>
       )}
