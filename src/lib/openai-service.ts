@@ -7,10 +7,20 @@ interface ParsedSkills {
     name: string;
     level: number; // 0-100
     category: string;
+    yearsOfExperience?: number;
   }[];
   currentRole?: string;
   experience?: number;
   education?: string;
+  graduationYear?: number;
+  workHistory?: {
+    company: string;
+    role: string;
+    startDate: string;
+    endDate: string;
+    duration: number; // in years
+    skills: string[];
+  }[];
 }
 
 // LinkedIn profile scraper function (simplified mock)
@@ -45,6 +55,14 @@ const extractTextFromFile = async (file: File): Promise<string> => {
       reader.readAsText(file);
     }
   });
+};
+
+// Helper function to calculate skill level based on years of experience
+const calculateSkillLevel = (yearsOfExperience: number): number => {
+  // Cap at 10 years for 100% level
+  const cappedYears = Math.min(yearsOfExperience, 10);
+  // Convert to percentage (0-100)
+  return Math.round((cappedYears / 10) * 100);
 };
 
 // Main function to parse skills using OpenAI
@@ -82,10 +100,25 @@ export const parseSkillsWithAI = async (
         messages: [
           {
             role: 'system',
-            content: `You are a skilled AI specialized in extracting professional skills from LinkedIn profiles and resumes. 
-            Extract all skills and categorize them. For each skill, estimate proficiency level on a scale of 0-100 based on the context.
-            Also extract current role, years of experience, and highest education.
-            Return the data in JSON format with fields: skills (array of objects with name, level, category), currentRole, experience, education.`
+            content: `You are an AI specialized in detailed professional skills analysis from resumes and LinkedIn profiles.
+            
+            Extract the following information in a structured format:
+            
+            1. Work History: Extract each job position with company name, role, start date, end date, and approximate duration in years.
+            2. Skills by Job: For each job, identify the top 5 skills utilized, categorized by type (e.g., Technical, Management, Soft Skills).
+            3. Education: Extract education details including graduation year.
+            4. Total Experience: Calculate the total years of professional experience.
+            5. Skill Duration: For each unique skill identified, calculate the total years of experience with that skill across all positions.
+            
+            Return the data in JSON format with fields:
+            - workHistory (array of objects with company, role, startDate, endDate, duration, skills)
+            - skills (array of objects with name, category, yearsOfExperience)
+            - currentRole (string)
+            - graduationYear (number or null)
+            - experience (total years)
+            - education (string)
+            
+            Be thorough and precise. If the document doesn't contain certain information, make reasonable estimates based on context but indicate uncertainty.`
           },
           {
             role: 'user',
@@ -93,7 +126,7 @@ export const parseSkillsWithAI = async (
           }
         ],
         temperature: 0.3,
-        max_tokens: 1000,
+        max_tokens: 1500,
         response_format: { type: "json_object" }, // Force JSON response
       }),
     });
@@ -110,21 +143,45 @@ export const parseSkillsWithAI = async (
       // Parse the JSON response, handling any irregularities in the AI's output
       const parsedResponse = JSON.parse(aiResponse.trim());
       
+      // Process the skills with calculated levels based on years of experience
+      const processedSkills = (parsedResponse.skills || []).map((skill: any) => {
+        const yearsOfExperience = skill.yearsOfExperience || 0;
+        return {
+          name: skill.name,
+          category: skill.category || 'General',
+          yearsOfExperience,
+          // Calculate level based on years of experience, capped at 10 years = 100%
+          level: skill.level || calculateSkillLevel(yearsOfExperience),
+        };
+      });
+      
+      // Calculate total years of experience if not provided
+      let totalExperience = parsedResponse.experience;
+      if (!totalExperience && parsedResponse.workHistory && parsedResponse.workHistory.length > 0) {
+        totalExperience = parsedResponse.workHistory.reduce(
+          (total: number, job: any) => total + (job.duration || 0), 
+          0
+        );
+      }
+      
+      // Calculate experience based on graduation year if no work history is available
+      if (!totalExperience && parsedResponse.graduationYear) {
+        const currentYear = new Date().getFullYear();
+        totalExperience = currentYear - parsedResponse.graduationYear;
+      }
+      
       // Return the parsed skills data with proper structure
       return {
-        skills: parsedResponse.skills.map((skill: any) => ({
-          name: skill.name,
-          level: skill.level || 50, // Default to 50 if not provided
-          category: skill.category || 'General',
-        })),
+        skills: processedSkills,
         currentRole: parsedResponse.currentRole,
-        experience: parsedResponse.experience,
+        experience: totalExperience,
         education: parsedResponse.education,
+        graduationYear: parsedResponse.graduationYear,
+        workHistory: parsedResponse.workHistory,
       };
     } catch (parseError) {
       console.error('Error parsing AI response:', parseError);
       // If we failed to parse the response as JSON, use a fallback approach
-      // In this case, create a simple default response
       return {
         skills: [
           { name: "Communication", level: 65, category: "Soft Skills" },
@@ -150,4 +207,29 @@ export const convertToAppSkills = (parsedSkills: ParsedSkills): Skill[] => {
     level: skill.level,
     category: skill.category,
   }));
+};
+
+// Function to get detailed work history from parsed skills
+export const getWorkHistory = (parsedSkills: ParsedSkills) => {
+  return parsedSkills.workHistory || [];
+};
+
+// Function to calculate experience metrics
+export const calculateExperienceMetrics = (parsedSkills: ParsedSkills) => {
+  const totalYearsExperience = parsedSkills.experience || 0;
+  const graduationYear = parsedSkills.graduationYear;
+  const currentYear = new Date().getFullYear();
+  
+  // Infer years since graduation if not directly provided
+  const yearsSinceGraduation = graduationYear 
+    ? currentYear - graduationYear 
+    : totalYearsExperience + 2; // Rough estimate adding typical education time
+  
+  return {
+    totalYearsExperience,
+    yearsSinceGraduation,
+    skillsByExperience: parsedSkills.skills
+      .filter(skill => skill.yearsOfExperience)
+      .sort((a, b) => (b.yearsOfExperience || 0) - (a.yearsOfExperience || 0))
+  };
 };

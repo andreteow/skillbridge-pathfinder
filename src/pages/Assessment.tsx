@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -29,7 +28,7 @@ import {
 } from "lucide-react";
 import { sampleCareerPaths, sampleUserProfile, calculateSkillGap } from "@/lib/data";
 import { Link } from "react-router-dom";
-import { parseSkillsWithAI, convertToAppSkills } from "@/lib/openai-service";
+import { parseSkillsWithAI, convertToAppSkills, getWorkHistory, calculateExperienceMetrics } from "@/lib/openai-service";
 import { UserProfile, Skill } from "@/lib/types";
 import SkillsExtractionModal from "@/components/SkillsExtractionModal";
 
@@ -68,6 +67,9 @@ const Assessment = () => {
       setFile(e.target.files[0]);
     }
   };
+  
+  const [workHistory, setWorkHistory] = useState<any[]>([]);
+  const [experienceMetrics, setExperienceMetrics] = useState<any>(null);
 
   const extractSkillsFromInput = async () => {
     try {
@@ -95,13 +97,23 @@ const Assessment = () => {
             name: skill.trim(),
             level: 50,
             category: 'General',
+            yearsOfExperience: parseInt(experience, 10) || 1
           })).filter(skill => skill.name.length > 0),
           currentRole,
           experience: parseInt(experience, 10),
           education,
+          graduationYear: new Date().getFullYear() - parseInt(experience, 10) - 4 // Rough estimate of graduation year
         };
         setAnalysisProgress(60);
       }
+      
+      // Get work history from parsed skills
+      const extractedWorkHistory = getWorkHistory(parsedSkills);
+      setWorkHistory(extractedWorkHistory);
+      
+      // Calculate experience metrics
+      const metrics = calculateExperienceMetrics(parsedSkills);
+      setExperienceMetrics(metrics);
       
       // Convert parsed skills to app format
       const skills = convertToAppSkills(parsedSkills);
@@ -828,56 +840,4 @@ const Assessment = () => {
                       <div>
                         <div className="text-sm text-gray-500 mb-1">Learning Investment</div>
                         <div className="font-semibold">
-                          {careerReadiness >= 70 ? "5-10 hrs/week" : careerReadiness >= 50 ? "10-15 hrs/week" : "15-20 hrs/week"}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="border-t mt-6 pt-6">
-                      <h4 className="font-medium mb-3">Similar Careers</h4>
-                      <div className="space-y-2">
-                        {sampleCareerPaths
-                          .filter(cp => cp.id !== selectedCareer)
-                          .map(career => (
-                            <Button 
-                              key={career.id}
-                              variant="outline" 
-                              className="w-full justify-start text-left"
-                              onClick={() => setSelectedCareer(career.id)}
-                            >
-                              {career.title}
-                            </Button>
-                          ))
-                        }
-                      </div>
-                    </div>
-                    
-                    <div className="mt-6">
-                      <Link to="/pathway">
-                        <Button className="w-full bg-skill-primary hover:bg-skill-tertiary">
-                          View Learning Path
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                      </Link>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Skills Extraction Modal */}
-        <SkillsExtractionModal
-          open={showSkillsModal}
-          onOpenChange={setShowSkillsModal}
-          skills={extractedSkills}
-          onConfirm={handleConfirmSkills}
-          onEdit={handleSkillEdit}
-        />
-      </div>
-    </Layout>
-  );
-};
-
-export default Assessment;
+                          {careerReadiness >= 70 ? "5-10 hrs/week" : careerReadiness >=
