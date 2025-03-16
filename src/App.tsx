@@ -10,6 +10,8 @@ import SignInPage from "./pages/SignIn";
 import SignUpPage from "./pages/SignUp";
 import Waitlist from "./pages/Waitlist";
 import Assessment from "./pages/Assessment";
+import Pathway from "./pages/Pathway";
+import PrivateRoute from "./components/PrivateRoute";
 import { ClerkLoaded, ClerkLoading } from "@clerk/clerk-react";
 import { Loader2 } from "lucide-react";
 
@@ -33,7 +35,14 @@ const App = () => (
             <Route path="/sign-up/*" element={<SignUpPage />} />
             <Route path="/waitlist" element={<Waitlist />} />
             <Route path="/assessment" element={<Assessment />} />
-            <Route path="/pathway" element={<NotFound />} />
+            <Route 
+              path="/pathway" 
+              element={
+                <PrivateRoute>
+                  <Pathway />
+                </PrivateRoute>
+              } 
+            />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
