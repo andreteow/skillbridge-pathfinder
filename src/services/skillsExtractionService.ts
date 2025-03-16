@@ -69,6 +69,18 @@ export const extractSkillsFromInput = async ({
     // Get work history from parsed skills
     const extractedWorkHistory = getWorkHistory(parsedSkills);
     
+    // Ensure work history skills are strings, not objects
+    const processedWorkHistory = extractedWorkHistory.map(job => ({
+      ...job,
+      skills: job.skills.map((skill: any) => {
+        // If skill is an object with a name property, extract the name
+        if (typeof skill === 'object' && skill !== null && 'name' in skill) {
+          return skill.name;
+        }
+        return String(skill); // Ensure it's a string
+      })
+    }));
+    
     // Calculate experience metrics
     const metrics = calculateExperienceMetrics(parsedSkills);
     
@@ -90,7 +102,7 @@ export const extractSkillsFromInput = async ({
     return {
       success: true,
       skills,
-      workHistory: extractedWorkHistory,
+      workHistory: processedWorkHistory, // Use the processed work history
       experienceMetrics: metrics,
       userProfile: profile
     };
