@@ -31,6 +31,7 @@ import { sampleCareerPaths, sampleUserProfile, calculateSkillGap } from "@/lib/d
 import { Link } from "react-router-dom";
 import { parseSkillsWithAI, convertToAppSkills } from "@/lib/openai-service";
 import { UserProfile, Skill } from "@/lib/types";
+import SkillsExtractionModal from "@/components/SkillsExtractionModal";
 
 const Assessment = () => {
   const [activeTab, setActiveTab] = useState<string>("upload");
@@ -49,6 +50,9 @@ const Assessment = () => {
   const [analysisProgress, setAnalysisProgress] = useState<number>(0);
   const [extractedSkills, setExtractedSkills] = useState<Skill[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  
+  // New state for skills extraction modal
+  const [showSkillsModal, setShowSkillsModal] = useState<boolean>(false);
   
   const { toast } = useToast();
 
@@ -116,6 +120,10 @@ const Assessment = () => {
       setUserProfile(profile);
       setAnalysisProgress(90);
       
+      // Show the skills extraction modal
+      setIsAnalyzing(false);
+      setShowSkillsModal(true);
+      
       return true;
     } catch (error) {
       console.error("Error extracting skills:", error);
@@ -124,7 +132,34 @@ const Assessment = () => {
         description: error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive",
       });
+      setIsAnalyzing(false);
       return false;
+    }
+  };
+
+  const handleSkillEdit = (skillId: string, newLevel: number) => {
+    const updatedSkills = extractedSkills.map(skill => 
+      skill.id === skillId ? { ...skill, level: newLevel } : skill
+    );
+    
+    setExtractedSkills(updatedSkills);
+    
+    // Also update the skills in the user profile
+    if (userProfile) {
+      setUserProfile({
+        ...userProfile,
+        skills: updatedSkills,
+      });
+    }
+  };
+
+  const handleConfirmSkills = () => {
+    setShowSkillsModal(false);
+    
+    // Move to step 2 after confirming skills
+    if (step === 1) {
+      setStep(2);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
@@ -157,6 +192,21 @@ const Assessment = () => {
           return;
         }
       }
+      
+      // Extract skills first (if not already done)
+      if (!userProfile) {
+        const success = await extractSkillsFromInput();
+        if (!success) {
+          return; // Stop if skills extraction failed
+        }
+        // The modal will be shown and the function will return here
+        return;
+      }
+      
+      // If skills were already extracted, just go to step 2
+      setStep(2);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
     }
 
     if (step === 2 && !selectedCareer) {
@@ -172,20 +222,11 @@ const Assessment = () => {
       setStep(step + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
-      // Start analysis
+      // Start final analysis
       setIsAnalyzing(true);
       setAnalysisProgress(0);
       
-      // Extract skills first (if not already done)
-      if (!userProfile) {
-        const success = await extractSkillsFromInput();
-        if (!success) {
-          setIsAnalyzing(false);
-          return;
-        }
-      }
-      
-      // Simulate remaining analysis progress
+      // Simulate analysis progress
       const interval = setInterval(() => {
         setAnalysisProgress(prev => {
           if (prev >= 100) {
@@ -825,6 +866,15 @@ const Assessment = () => {
             </div>
           </div>
         )}
+        
+        {/* Skills Extraction Modal */}
+        <SkillsExtractionModal
+          open={showSkillsModal}
+          onOpenChange={setShowSkillsModal}
+          skills={extractedSkills}
+          onConfirm={handleConfirmSkills}
+          onEdit={handleSkillEdit}
+        />
       </div>
     </Layout>
   );
