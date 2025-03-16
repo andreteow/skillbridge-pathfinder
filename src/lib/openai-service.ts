@@ -56,47 +56,7 @@ export const parseSkillsWithAI = async (
     
     console.log('Using API key:', apiKey ? 'Key is present (hidden for security)' : 'Key is missing');
     
-    // Create a mock response for now until the accuracy issues are addressed
-    // This is temporary and should be replaced with actual API integration later
-    return {
-      skills: [
-        { name: "Project Management", level: 80, category: "Management", yearsOfExperience: 4 },
-        { name: "Strategic Planning", level: 75, category: "Management", yearsOfExperience: 3 },
-        { name: "Team Leadership", level: 85, category: "Management", yearsOfExperience: 5 },
-        { name: "Business Analysis", level: 70, category: "Business", yearsOfExperience: 3 },
-        { name: "Data Analysis", level: 65, category: "Technical", yearsOfExperience: 2 },
-        { name: "Stakeholder Management", level: 80, category: "Soft Skills", yearsOfExperience: 4 },
-        { name: "Communication", level: 90, category: "Soft Skills", yearsOfExperience: 5 },
-        { name: "Problem Solving", level: 85, category: "Soft Skills", yearsOfExperience: 5 },
-      ],
-      currentRole: "Project Manager",
-      experience: 5,
-      education: "Bachelor's in Business Administration",
-      graduationYear: 2016,
-      workHistory: [
-        {
-          company: "Sample Company",
-          role: "Project Manager",
-          startDate: "2020-01",
-          endDate: "Present",
-          duration: 3,
-          skills: ["Project Management", "Team Leadership", "Stakeholder Management"]
-        },
-        {
-          company: "Previous Company",
-          role: "Project Coordinator",
-          startDate: "2017-03",
-          endDate: "2019-12",
-          duration: 2.8,
-          skills: ["Project Coordination", "Data Analysis", "Communication"]
-        }
-      ]
-    };
-    
-    /* 
-    // This is the code to call the OpenAI API with GPT-4o
-    // It's commented out until the accuracy issues are addressed
-    
+    // Call the OpenAI API with GPT-4o to extract profile information
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -126,7 +86,9 @@ export const parseSkillsWithAI = async (
             - experience (total years)
             - education (string)
             
-            Be thorough and precise. If the document doesn't contain certain information, make reasonable estimates based on context but indicate uncertainty.`
+            Be thorough and precise. If the document doesn't contain certain information, make reasonable estimates based on context but indicate uncertainty.
+            
+            Important: For this analysis, analyze the LinkedIn URL or text content provided to determine skills and experience. If the content is minimal or appears to be just a URL, use your knowledge to extract a professional profile from that URL, making educated guesses about the skills and experience that might be associated with it. Even with limited input, provide a complete profile with appropriate estimated skills and experience.`
           },
           {
             role: 'user',
@@ -147,7 +109,13 @@ export const parseSkillsWithAI = async (
     const aiResponse = result.choices[0].message.content;
     
     // Parse the JSON response from GPT-4o
-    const parsedResponse = JSON.parse(aiResponse.trim());
+    let parsedResponse;
+    try {
+      parsedResponse = JSON.parse(aiResponse.trim());
+    } catch (error) {
+      console.error('Error parsing OpenAI response:', error);
+      throw new Error('Failed to parse the AI response. Please try again.');
+    }
     
     // Process the skills with calculated levels based on years of experience
     const processedSkills = (parsedResponse.skills || []).map((skill: any) => {
@@ -185,8 +153,6 @@ export const parseSkillsWithAI = async (
       graduationYear: parsedResponse.graduationYear,
       workHistory: parsedResponse.workHistory,
     };
-    */
-    
   } catch (error) {
     console.error('Skill parsing error:', error);
     throw new Error('Failed to extract skills from LinkedIn profile. Please try again.');
