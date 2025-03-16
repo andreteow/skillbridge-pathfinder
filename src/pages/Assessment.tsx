@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -840,4 +841,31 @@ const Assessment = () => {
                       <div>
                         <div className="text-sm text-gray-500 mb-1">Learning Investment</div>
                         <div className="font-semibold">
-                          {careerReadiness >= 70 ? "5-10 hrs/week" : careerReadiness >=
+                          {careerReadiness >= 70 ? "5-10 hrs/week" : careerReadiness >= 50 ? "10-15 hrs/week" : "15-20 hrs/week"}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      
+      {/* Skills Extraction Modal */}
+      {showSkillsModal && (
+        <SkillsExtractionModal
+          skills={extractedSkills}
+          onSkillEdit={handleSkillEdit}
+          onConfirm={handleConfirmSkills}
+          onCancel={() => setShowSkillsModal(false)}
+          workHistory={workHistory}
+          experienceMetrics={experienceMetrics}
+        />
+      )}
+    </Layout>
+  );
+};
+
+export default Assessment;
