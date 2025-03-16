@@ -1,9 +1,12 @@
+
 import { useState } from "react";
 import { Skill, UserProfile } from "@/lib/types";
 
 export const useAssessmentState = () => {
   // Input form states
   const [activeTab, setActiveTab] = useState<string>("linkedin");
+  const [uploadType, setUploadType] = useState<string>("");
+  const [file, setFile] = useState<File | null>(null);
   const [linkedinUrl, setLinkedinUrl] = useState<string>("");
   const [currentRole, setCurrentRole] = useState<string>("");
   const [experience, setExperience] = useState<string>("0");
@@ -23,14 +26,13 @@ export const useAssessmentState = () => {
   const [showSkillsModal, setShowSkillsModal] = useState<boolean>(false);
   const [workHistory, setWorkHistory] = useState<any[]>([]);
   const [experienceMetrics, setExperienceMetrics] = useState<any>(null);
-
-  // Keep a file state for compatibility with the rest of the app
-  const [file, setFile] = useState<File | null>(null);
   
   return {
     // Input form states
     activeTab,
     setActiveTab,
+    uploadType,
+    setUploadType,
     file,
     setFile,
     linkedinUrl,

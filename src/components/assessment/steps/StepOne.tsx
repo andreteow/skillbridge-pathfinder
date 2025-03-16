@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,7 +11,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Linkedin } from "lucide-react";
+import { FileUp, Linkedin, Upload } from "lucide-react";
 
 interface AssessmentStepOneProps {
   activeTab: string;
@@ -35,6 +35,10 @@ interface AssessmentStepOneProps {
 const AssessmentStepOne: React.FC<AssessmentStepOneProps> = ({
   activeTab,
   setActiveTab,
+  uploadType,
+  setUploadType,
+  file,
+  setFile,
   linkedinUrl,
   setLinkedinUrl,
   currentRole,
@@ -46,6 +50,18 @@ const AssessmentStepOne: React.FC<AssessmentStepOneProps> = ({
   about,
   setAbout,
 }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  const triggerFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Step 1: Share Your Background</h2>
@@ -54,8 +70,9 @@ const AssessmentStepOne: React.FC<AssessmentStepOneProps> = ({
       </p>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-2 mb-6">
+        <TabsList className="grid grid-cols-3 mb-6">
           <TabsTrigger value="linkedin">LinkedIn Profile</TabsTrigger>
+          <TabsTrigger value="resume">Resume Upload</TabsTrigger>
           <TabsTrigger value="manual">Manual Entry</TabsTrigger>
         </TabsList>
         
@@ -81,6 +98,57 @@ const AssessmentStepOne: React.FC<AssessmentStepOneProps> = ({
             </div>
             <p className="text-xs text-gray-500">
               Make sure your profile is public or we won't be able to access it.
+            </p>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="resume" className="space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                Upload Your Resume (PDF, DOCX)
+              </label>
+              <div 
+                className={`border-2 border-dashed rounded-md p-8 text-center cursor-pointer transition-colors
+                  ${file ? 'border-green-500 bg-green-50' : 'border-gray-300 hover:border-gray-400'}`}
+                onClick={triggerFileUpload}
+              >
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  className="hidden"
+                  accept=".pdf,.docx,.doc"
+                />
+                
+                {file ? (
+                  <div className="space-y-2">
+                    <FileUp className="h-8 w-8 mx-auto text-green-500" />
+                    <p className="font-medium text-green-700">{file.name}</p>
+                    <p className="text-sm text-green-600">File uploaded successfully</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Upload className="h-8 w-8 mx-auto text-gray-400" />
+                    <p className="font-medium">Drag and drop or click to upload</p>
+                    <p className="text-sm text-gray-500">
+                      We'll extract your skills and experience automatically
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+            {file && (
+              <Button 
+                variant="outline" 
+                onClick={() => setFile(null)}
+                className="text-red-500 hover:text-red-600 hover:bg-red-50"
+              >
+                Remove resume
+              </Button>
+            )}
+            <p className="text-xs text-gray-500">
+              We support PDF and Word documents (.docx, .doc) up to 5MB.
             </p>
           </div>
         </TabsContent>

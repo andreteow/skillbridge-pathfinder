@@ -10,6 +10,7 @@ export interface SkillsExtractionParams {
   experience: string;
   education: string;
   about: string;
+  file?: File | null;
   setAnalysisProgress: (progress: number) => void;
 }
 
@@ -20,6 +21,7 @@ export const extractSkillsFromInput = async ({
   experience,
   education,
   about,
+  file,
   setAnalysisProgress,
 }: SkillsExtractionParams): Promise<{
   success: boolean;
@@ -37,6 +39,16 @@ export const extractSkillsFromInput = async ({
       setAnalysisProgress(30);
       parsedSkills = await parseSkillsWithAI({ type: "linkedin", url: linkedinUrl });
       setAnalysisProgress(60);
+    } else if (activeTab === "resume" && file) {
+      setAnalysisProgress(30);
+      // Convert file to base64
+      const base64 = await fileToBase64(file);
+      parsedSkills = await parseSkillsWithAI({ 
+        type: "resume", 
+        fileContent: base64,
+        fileName: file.name
+      });
+      setAnalysisProgress(60);
     } else if (activeTab === "manual") {
       // For manual entry, we'll create skills based on user input
       parsedSkills = {
@@ -53,7 +65,7 @@ export const extractSkillsFromInput = async ({
       };
       setAnalysisProgress(60);
     } else {
-      throw new Error("No LinkedIn URL provided for LinkedIn analysis");
+      throw new Error("No input provided for skills analysis");
     }
     
     // Get work history from parsed skills
@@ -105,4 +117,22 @@ export const extractSkillsFromInput = async ({
     });
     return { success: false };
   }
+};
+
+// Helper function to convert File to base64
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        // Remove data URL prefix (e.g., "data:application/pdf;base64,")
+        const base64 = reader.result.split(',')[1];
+        resolve(base64);
+      } else {
+        reject(new Error('Failed to convert file to base64'));
+      }
+    };
+    reader.onerror = error => reject(error);
+  });
 };

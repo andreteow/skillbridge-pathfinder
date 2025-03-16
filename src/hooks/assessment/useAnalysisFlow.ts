@@ -11,6 +11,7 @@ export interface AnalysisFlowProps {
   experience: string;
   education: string;
   about: string;
+  file: File | null;
   selectedCareer: string;
   step: number;
   setStep: (step: number) => void;
@@ -33,6 +34,7 @@ export const useAnalysisFlow = ({
   experience,
   education,
   about,
+  file,
   selectedCareer,
   step,
   setStep,
@@ -51,11 +53,21 @@ export const useAnalysisFlow = ({
 
   const runAnalysis = async () => {
     if (step === 1) {
+      // Validate inputs based on active tab
       if (activeTab === "linkedin") {
         if (!linkedinUrl) {
           toast({
             title: "LinkedIn URL missing",
             description: "Please enter your LinkedIn profile URL to continue.",
+            variant: "destructive",
+          });
+          return;
+        }
+      } else if (activeTab === "resume") {
+        if (!file) {
+          toast({
+            title: "Resume missing",
+            description: "Please upload your resume to continue.",
             variant: "destructive",
           });
           return;
@@ -82,6 +94,7 @@ export const useAnalysisFlow = ({
           experience,
           education,
           about,
+          file,
           setAnalysisProgress
         });
         
