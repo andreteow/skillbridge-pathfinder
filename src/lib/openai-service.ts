@@ -62,10 +62,19 @@ export const parseSkillsWithAI = async (
     }
     
     // Step 2: Use OpenAI API to extract skills
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
+    
+    if (!apiKey) {
+      console.error('OpenAI API key is missing');
+      throw new Error('OpenAI API key is not configured. Please check your environment variables.');
+    }
+    
+    console.log('Using API key:', apiKey ? 'Key is present (hidden for security)' : 'Key is missing');
+    
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${import.meta.env.OPENAI_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
