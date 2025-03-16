@@ -1,54 +1,75 @@
-# Welcome to your Lovable project
 
-## Project info
 
-**URL**: https://lovable.dev/projects/f5427ec2-1855-4093-864d-6f06e3b86a21
+### 🔥 Core Product Offering: AI-Powered Skill Gap Analysis & Training Pathways  
+At its heart, this feature should do **three things well**:  
+1. **Assess Current Skills** – Analyze the user’s existing experience & transferable skills.  
+2. **Identify Skill Gaps** – Compare against target roles & show missing competencies.  
+3. **Provide a Step-by-Step Learning Pathway** – Personalized roadmap to gain new skills, including courses, projects, and certifications.  
 
-## How can I edit this code?
 
-There are several ways of editing your application.
+## 📝 PRD: AI-Powered Skill Gap Analysis & Training Pathways  
 
-**Use Lovable**
+### **TL;DR**  
+An AI-driven feature that helps mid-career professionals transition into new fields by assessing their current skills, identifying gaps, and creating a **personalized training roadmap**.  
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/f5427ec2-1855-4093-864d-6f06e3b86a21) and start prompting.
+### **Problem Statement**  
+Many professionals feel **trapped in their current jobs** but don’t know what skills they need to **break into a new field**. Generic career advice is **too broad**, and learning resources don’t show a **clear, structured path** to success.  
 
-Changes made via Lovable will be committed automatically to this repo.
+### **Goals**  
+#### **Business Goals**  
+- Build a **differentiated AI-powered career transition tool**.  
+- Increase **user engagement & retention** through personalized learning pathways.  
+- Drive **monetization** through premium coaching, course partnerships, or job placement services.  
 
-**Use your preferred IDE**
+#### **User Goals**  
+- Get a **clear understanding** of what’s required to switch careers.  
+- Receive **personalized, step-by-step** learning paths based on their background.  
+- Gain confidence by tracking progress and seeing **real career outcomes**.  
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+#### **Non-Goals**  
+- We are **not** building a generic job board.  
+- We are **not** just recommending random online courses.  
+- We are **not** replacing real-world experience but **accelerating** the path to a new career.  
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-Follow these steps:
+## **User Flow**  
+### 🎯 **1. Skill Assessment**  
+- User uploads **resume** (or links to LinkedIn).  
+- AI scans **past job roles, skills, projects, and education**.  
+- User answers a few **behavioral & interest-based** questions (e.g., “Do you prefer analytical or creative work?”).  
+- AI generates a **skills profile** (e.g., “You have strong project management & analytical skills, but weak coding & UX knowledge”).  
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### 🔍 **2. Career Matching & Skill Gap Analysis**  
+- User selects a **target career path** (e.g., "I want to move from Marketing to Data Analytics").  
+- AI compares the user’s skills to **industry benchmarks** (e.g., job descriptions, real-world requirements).  
+- Output:  
+  - **“You are 70% ready for Data Analytics”**  
+  - Missing skills highlighted (e.g., "You need SQL, Python, and Data Visualization").  
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### 🚀 **3. Personalized Training Pathway**  
+- AI generates a structured **learning roadmap** with:  
+  - Recommended **courses** (Coursera, Udemy, etc.)  
+  - **Hands-on projects** (e.g., “Build a data dashboard using Python”).  
+  - **Certifications** (if relevant to the field).  
+- Users can **track progress**, earn milestones, and get **AI coaching** along the way.  
 
-# Step 3: Install the necessary dependencies.
-npm i
+### 🎓 **4. Job Readiness & Next Steps**  
+- AI refines **resume & LinkedIn profile** based on new skills.  
+- User gets guidance on **portfolio projects & interview prep**.  
+- Option to connect with **mentors or hiring managers**.  
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
 
-**Edit a file directly in GitHub**
+## **Success Metrics**  
+✅ **User Engagement:** % of users completing assessments & skill roadmaps.  
+✅ **Conversion Rates:** % of users enrolling in recommended courses.  
+✅ **Career Transitions:** % of users landing a job in their new field.  
+✅ **Retention:** How often users return to track progress.  
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## **Technical Considerations**  
+- **AI Skill Matching:** Use **NLP & machine learning** to compare resumes with industry skill benchmarks.  
+- **APIs for Course Recommendations:** Integrate with **Coursera, Udemy, LinkedIn Learning**.  
+- **Gamification & Progress Tracking:** Encourage completion with rewards, streaks, and progress bars.  
 
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
 
 ## What technologies are used for this project?
 
@@ -64,6 +85,4 @@ This project is built with .
 
 Simply open [Lovable](https://lovable.dev/projects/f5427ec2-1855-4093-864d-6f06e3b86a21) and click on Share -> Publish.
 
-## I want to use a custom domain - is that possible?
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
