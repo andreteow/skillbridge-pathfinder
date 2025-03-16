@@ -38,12 +38,16 @@ export const extractSkillsFromInput = async ({
     let parsedSkills;
     
     if (activeTab === "upload") {
-      if (linkedinUrl) {
+      if (uploadType === "resume" && file) {
+        setAnalysisProgress(30);
+        parsedSkills = await parseSkillsWithAI({ type: "resume", file });
+        setAnalysisProgress(60);
+      } else if (uploadType === "linkedin" && linkedinUrl) {
         setAnalysisProgress(30);
         parsedSkills = await parseSkillsWithAI({ type: "linkedin", url: linkedinUrl });
         setAnalysisProgress(60);
       } else {
-        throw new Error("No LinkedIn URL provided");
+        throw new Error("No file or LinkedIn URL provided");
       }
     } else {
       // For manual entry, we'll create skills based on user input

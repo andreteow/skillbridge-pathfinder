@@ -12,7 +12,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Linkedin } from "lucide-react";
+import { FileUp, Linkedin, CheckCircle } from "lucide-react";
 
 interface AssessmentStepOneProps {
   activeTab: string;
@@ -51,6 +51,12 @@ const AssessmentStepOne: React.FC<AssessmentStepOneProps> = ({
   about,
   setAbout,
 }) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Step 1: Share Your Background</h2>
@@ -60,30 +66,82 @@ const AssessmentStepOne: React.FC<AssessmentStepOneProps> = ({
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-2 mb-6">
-          <TabsTrigger value="upload">LinkedIn Profile</TabsTrigger>
+          <TabsTrigger value="upload">Upload Profile</TabsTrigger>
           <TabsTrigger value="manual">Manual Entry</TabsTrigger>
         </TabsList>
         
         <TabsContent value="upload" className="space-y-6">
-          {/* LinkedIn profile section */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="linkedin-url" className="text-sm font-medium">
-                LinkedIn Profile URL
-              </label>
-              <div className="flex gap-2">
-                <Input
-                  id="linkedin-url"
-                  placeholder="https://www.linkedin.com/in/yourprofile"
-                  value={linkedinUrl}
-                  onChange={(e) => setLinkedinUrl(e.target.value)}
-                />
-              </div>
-            </div>
-            <p className="text-xs text-gray-500">
-              Make sure your profile is public or we won't be able to access it.
-            </p>
+          <div className="flex flex-col md:flex-row gap-4">
+            <Button
+              variant={uploadType === "resume" ? "default" : "outline"}
+              className={`flex-1 justify-start ${uploadType === "resume" ? "bg-skill-primary" : ""}`}
+              onClick={() => setUploadType("resume")}
+            >
+              <FileUp className="mr-2 h-4 w-4" />
+              Upload Resume
+            </Button>
+            <Button
+              variant={uploadType === "linkedin" ? "default" : "outline"}
+              className={`flex-1 justify-start ${uploadType === "linkedin" ? "bg-skill-primary" : ""}`}
+              onClick={() => setUploadType("linkedin")}
+            >
+              <Linkedin className="mr-2 h-4 w-4" />
+              LinkedIn Profile
+            </Button>
           </div>
+          
+          {uploadType === "resume" ? (
+            <Card className="border-dashed">
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center justify-center py-4">
+                  <FileUp className="mb-4 h-10 w-10 text-gray-400" />
+                  <p className="mb-2 text-sm text-gray-500">
+                    Drag and drop your resume or
+                  </p>
+                  <label htmlFor="resume-upload" className="cursor-pointer">
+                    <span className="relative inline-flex items-center justify-center rounded-md bg-skill-primary px-4 py-2 text-sm font-semibold text-white hover:bg-skill-tertiary focus:outline-none focus:ring-2 focus:ring-skill-primary focus:ring-offset-2">
+                      Browse Files
+                    </span>
+                    <Input
+                      id="resume-upload"
+                      type="file"
+                      className="sr-only"
+                      accept=".pdf,.doc,.docx"
+                      onChange={handleFileChange}
+                    />
+                  </label>
+                  {file && (
+                    <div className="mt-4 flex items-center gap-2 text-sm text-gray-500">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <span>{file.name}</span>
+                    </div>
+                  )}
+                  <p className="mt-2 text-xs text-gray-500">
+                    Supported formats: PDF, DOC, DOCX (Max 5MB)
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="linkedin-url" className="text-sm font-medium">
+                  LinkedIn Profile URL
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    id="linkedin-url"
+                    placeholder="https://www.linkedin.com/in/yourprofile"
+                    value={linkedinUrl}
+                    onChange={(e) => setLinkedinUrl(e.target.value)}
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-gray-500">
+                Make sure your profile is public or we won't be able to access it.
+              </p>
+            </div>
+          )}
         </TabsContent>
         
         <TabsContent value="manual" className="space-y-4">
