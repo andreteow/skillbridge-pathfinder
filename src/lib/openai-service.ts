@@ -23,6 +23,11 @@ interface ParsedSkills {
   }[];
 }
 
+// Type for input to parseSkillsWithAI
+type ParseSkillsInput = 
+  | { type: 'linkedin'; url: string }
+  | { type: 'resume'; fileContent: string; fileName: string };
+
 // LinkedIn profile scraper function (simplified mock)
 const scrapeLinkedInProfile = async (url: string): Promise<string> => {
   // In a real implementation, you would use a scraping service or LinkedIn API
@@ -40,11 +45,18 @@ const calculateSkillLevel = (yearsOfExperience: number): number => {
 
 // Main function to parse skills using OpenAI
 export const parseSkillsWithAI = async (
-  input: { type: 'linkedin'; url: string }
+  input: ParseSkillsInput
 ): Promise<ParsedSkills> => {
   try {
-    // Extract LinkedIn profile URL
-    const content = await scrapeLinkedInProfile(input.url);
+    // Extract content based on input type
+    let content = '';
+    
+    if (input.type === 'linkedin') {
+      content = await scrapeLinkedInProfile(input.url);
+    } else if (input.type === 'resume') {
+      content = `Resume File: ${input.fileName}\nContent: [Base64 encoded resume data]`;
+      // In reality, we would process the base64 content here or pass it directly to the API
+    }
     
     // Use OpenAI API to extract skills
     const apiKey = import.meta.env.VITE_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
@@ -68,7 +80,7 @@ export const parseSkillsWithAI = async (
         messages: [
           {
             role: 'system',
-            content: `You are an AI specialized in detailed professional skills analysis from LinkedIn profiles.
+            content: `You are an AI specialized in detailed professional skills analysis from ${input.type === 'linkedin' ? 'LinkedIn profiles' : 'resumes'}.
             
             Extract the following information in a structured format:
             
@@ -88,7 +100,7 @@ export const parseSkillsWithAI = async (
             
             Be thorough and precise. If the document doesn't contain certain information, make reasonable estimates based on context but indicate uncertainty.
             
-            Important: For this analysis, analyze the LinkedIn URL or text content provided to determine skills and experience. If the content is minimal or appears to be just a URL, use your knowledge to extract a professional profile from that URL, making educated guesses about the skills and experience that might be associated with it. Even with limited input, provide a complete profile with appropriate estimated skills and experience.`
+            Important: For this analysis, analyze the ${input.type === 'linkedin' ? 'LinkedIn URL or text content' : 'resume content'} provided to determine skills and experience. If the content is minimal or appears to be just a URL, use your knowledge to extract a professional profile from that URL, making educated guesses about the skills and experience that might be associated with it. Even with limited input, provide a complete profile with appropriate estimated skills and experience.`
           },
           {
             role: 'user',
@@ -155,7 +167,7 @@ export const parseSkillsWithAI = async (
     };
   } catch (error) {
     console.error('Skill parsing error:', error);
-    throw new Error('Failed to extract skills from LinkedIn profile. Please try again.');
+    throw new Error(`Failed to extract skills from ${input.type === 'linkedin' ? 'LinkedIn profile' : 'resume'}. Please try again.`);
   }
 };
 
