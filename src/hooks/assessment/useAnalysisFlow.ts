@@ -131,17 +131,18 @@ export const useAnalysisFlow = ({
       setAnalysisProgress(0);
       
       // Simulate analysis progress
+      let progress = 0;
       const interval = setInterval(() => {
-        setAnalysisProgress((prev) => {
-          const newValue = prev + 5;
-          if (newValue >= 100) {
-            clearInterval(interval);
-            setIsAnalyzing(false);
-            setAnalysisComplete(true);
-            return 100;
-          }
-          return newValue;
-        });
+        progress += 5;
+        
+        if (progress >= 100) {
+          clearInterval(interval);
+          setIsAnalyzing(false);
+          setAnalysisComplete(true);
+          setAnalysisProgress(100);
+        } else {
+          setAnalysisProgress(progress);
+        }
       }, 150);
     }
   };
