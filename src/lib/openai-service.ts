@@ -1,7 +1,7 @@
 
 import { Skill } from './types';
 
-// Types for LinkedIn profile and resume parsing
+// Types for LinkedIn profile parsing
 interface ParsedSkills {
   skills: {
     name: string;
@@ -30,33 +30,6 @@ const scrapeLinkedInProfile = async (url: string): Promise<string> => {
   return `LinkedIn Profile URL: ${url}`;
 };
 
-// Function to extract text content from a PDF/DOC file
-const extractTextFromFile = async (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    
-    reader.onload = async (event) => {
-      if (!event.target) return reject("Error reading file");
-      
-      // For PDF files, you'd use a PDF parser library
-      // For simplicity, we're just returning text for demonstration
-      // In a production app, use a proper parser like pdf.js or mammoth.js
-      resolve(`Resume content extracted from: ${file.name}`);
-    };
-    
-    reader.onerror = () => reject(reader.error);
-    
-    // Read the file as text
-    if (file.type === "application/pdf") {
-      // For PDF files, read as array buffer (in production)
-      reader.readAsText(file);
-    } else {
-      // For DOC/DOCX/TXT, read as text
-      reader.readAsText(file);
-    }
-  });
-};
-
 // Helper function to calculate skill level based on years of experience
 const calculateSkillLevel = (yearsOfExperience: number): number => {
   // Cap at 10 years for 100% level
@@ -67,19 +40,13 @@ const calculateSkillLevel = (yearsOfExperience: number): number => {
 
 // Main function to parse skills using OpenAI
 export const parseSkillsWithAI = async (
-  input: { type: 'linkedin'; url: string } | { type: 'resume'; file: File }
+  input: { type: 'linkedin'; url: string }
 ): Promise<ParsedSkills> => {
   try {
-    // Step 1: Extract content based on input type
-    let content = "";
+    // Extract LinkedIn profile URL
+    const content = await scrapeLinkedInProfile(input.url);
     
-    if (input.type === 'linkedin') {
-      content = await scrapeLinkedInProfile(input.url);
-    } else {
-      content = await extractTextFromFile(input.file);
-    }
-    
-    // Step 2: Use OpenAI API to extract skills
+    // Use OpenAI API to extract skills
     const apiKey = import.meta.env.VITE_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
     
     if (!apiKey) {
@@ -88,6 +55,47 @@ export const parseSkillsWithAI = async (
     }
     
     console.log('Using API key:', apiKey ? 'Key is present (hidden for security)' : 'Key is missing');
+    
+    // Create a mock response for now until the accuracy issues are addressed
+    // This is temporary and should be replaced with actual API integration later
+    return {
+      skills: [
+        { name: "Project Management", level: 80, category: "Management", yearsOfExperience: 4 },
+        { name: "Strategic Planning", level: 75, category: "Management", yearsOfExperience: 3 },
+        { name: "Team Leadership", level: 85, category: "Management", yearsOfExperience: 5 },
+        { name: "Business Analysis", level: 70, category: "Business", yearsOfExperience: 3 },
+        { name: "Data Analysis", level: 65, category: "Technical", yearsOfExperience: 2 },
+        { name: "Stakeholder Management", level: 80, category: "Soft Skills", yearsOfExperience: 4 },
+        { name: "Communication", level: 90, category: "Soft Skills", yearsOfExperience: 5 },
+        { name: "Problem Solving", level: 85, category: "Soft Skills", yearsOfExperience: 5 },
+      ],
+      currentRole: "Project Manager",
+      experience: 5,
+      education: "Bachelor's in Business Administration",
+      graduationYear: 2016,
+      workHistory: [
+        {
+          company: "Sample Company",
+          role: "Project Manager",
+          startDate: "2020-01",
+          endDate: "Present",
+          duration: 3,
+          skills: ["Project Management", "Team Leadership", "Stakeholder Management"]
+        },
+        {
+          company: "Previous Company",
+          role: "Project Coordinator",
+          startDate: "2017-03",
+          endDate: "2019-12",
+          duration: 2.8,
+          skills: ["Project Coordination", "Data Analysis", "Communication"]
+        }
+      ]
+    };
+    
+    /* 
+    // This is the code to call the OpenAI API with GPT-4o
+    // It's commented out until the accuracy issues are addressed
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -100,7 +108,7 @@ export const parseSkillsWithAI = async (
         messages: [
           {
             role: 'system',
-            content: `You are an AI specialized in detailed professional skills analysis from resumes and LinkedIn profiles.
+            content: `You are an AI specialized in detailed professional skills analysis from LinkedIn profiles.
             
             Extract the following information in a structured format:
             
@@ -138,64 +146,50 @@ export const parseSkillsWithAI = async (
     const result = await response.json();
     const aiResponse = result.choices[0].message.content;
     
-    // Step 3: Parse the JSON response from GPT-4o
-    try {
-      // Parse the JSON response, handling any irregularities in the AI's output
-      const parsedResponse = JSON.parse(aiResponse.trim());
-      
-      // Process the skills with calculated levels based on years of experience
-      const processedSkills = (parsedResponse.skills || []).map((skill: any) => {
-        const yearsOfExperience = skill.yearsOfExperience || 0;
-        return {
-          name: skill.name,
-          category: skill.category || 'General',
-          yearsOfExperience,
-          // Calculate level based on years of experience, capped at 10 years = 100%
-          level: skill.level || calculateSkillLevel(yearsOfExperience),
-        };
-      });
-      
-      // Calculate total years of experience if not provided
-      let totalExperience = parsedResponse.experience;
-      if (!totalExperience && parsedResponse.workHistory && parsedResponse.workHistory.length > 0) {
-        totalExperience = parsedResponse.workHistory.reduce(
-          (total: number, job: any) => total + (job.duration || 0), 
-          0
-        );
-      }
-      
-      // Calculate experience based on graduation year if no work history is available
-      if (!totalExperience && parsedResponse.graduationYear) {
-        const currentYear = new Date().getFullYear();
-        totalExperience = currentYear - parsedResponse.graduationYear;
-      }
-      
-      // Return the parsed skills data with proper structure
+    // Parse the JSON response from GPT-4o
+    const parsedResponse = JSON.parse(aiResponse.trim());
+    
+    // Process the skills with calculated levels based on years of experience
+    const processedSkills = (parsedResponse.skills || []).map((skill: any) => {
+      const yearsOfExperience = skill.yearsOfExperience || 0;
       return {
-        skills: processedSkills,
-        currentRole: parsedResponse.currentRole,
-        experience: totalExperience,
-        education: parsedResponse.education,
-        graduationYear: parsedResponse.graduationYear,
-        workHistory: parsedResponse.workHistory,
+        name: skill.name,
+        category: skill.category || 'General',
+        yearsOfExperience,
+        // Calculate level based on years of experience, capped at 10 years = 100%
+        level: skill.level || calculateSkillLevel(yearsOfExperience),
       };
-    } catch (parseError) {
-      console.error('Error parsing AI response:', parseError);
-      // If we failed to parse the response as JSON, use a fallback approach
-      return {
-        skills: [
-          { name: "Communication", level: 65, category: "Soft Skills" },
-          { name: "Problem Solving", level: 70, category: "Soft Skills" },
-          { name: "Teamwork", level: 75, category: "Soft Skills" }
-        ],
-        currentRole: "Professional",
-        experience: 2,
-        education: "Bachelor's Degree"
-      };
+    });
+    
+    // Calculate total years of experience if not provided
+    let totalExperience = parsedResponse.experience;
+    if (!totalExperience && parsedResponse.workHistory && parsedResponse.workHistory.length > 0) {
+      totalExperience = parsedResponse.workHistory.reduce(
+        (total: number, job: any) => total + (job.duration || 0), 
+        0
+      );
     }
+    
+    // Calculate experience based on graduation year if no work history is available
+    if (!totalExperience && parsedResponse.graduationYear) {
+      const currentYear = new Date().getFullYear();
+      totalExperience = currentYear - parsedResponse.graduationYear;
+    }
+    
+    // Return the parsed skills data with proper structure
+    return {
+      skills: processedSkills,
+      currentRole: parsedResponse.currentRole,
+      experience: totalExperience,
+      education: parsedResponse.education,
+      graduationYear: parsedResponse.graduationYear,
+      workHistory: parsedResponse.workHistory,
+    };
+    */
+    
   } catch (error) {
     console.error('Skill parsing error:', error);
-    throw new Error('Failed to extract skills. Please try again.');
+    throw new Error('Failed to extract skills from LinkedIn profile. Please try again.');
   }
 };
 

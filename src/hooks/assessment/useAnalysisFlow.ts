@@ -6,8 +6,6 @@ import { extractSkillsFromInput } from "@/services/skillsExtractionService";
 
 export interface AnalysisFlowProps {
   activeTab: string;
-  uploadType: string;
-  file: File | null;
   linkedinUrl: string;
   currentRole: string;
   experience: string;
@@ -30,8 +28,6 @@ export interface AnalysisFlowProps {
 
 export const useAnalysisFlow = ({
   activeTab,
-  uploadType,
-  file,
   linkedinUrl,
   currentRole,
   experience,
@@ -55,16 +51,8 @@ export const useAnalysisFlow = ({
 
   const runAnalysis = async () => {
     if (step === 1) {
-      if (activeTab === "upload") {
-        if (uploadType === "resume" && !file) {
-          toast({
-            title: "No file selected",
-            description: "Please upload your resume to continue.",
-            variant: "destructive",
-          });
-          return;
-        }
-        if (uploadType === "linkedin" && !linkedinUrl) {
+      if (activeTab === "linkedin") {
+        if (!linkedinUrl) {
           toast({
             title: "LinkedIn URL missing",
             description: "Please enter your LinkedIn profile URL to continue.",
@@ -89,8 +77,6 @@ export const useAnalysisFlow = ({
         
         const result = await extractSkillsFromInput({
           activeTab,
-          uploadType,
-          file,
           linkedinUrl,
           currentRole,
           experience,

@@ -5,8 +5,6 @@ import { toast } from "@/hooks/use-toast";
 
 export interface SkillsExtractionParams {
   activeTab: string;
-  uploadType: string;
-  file: File | null;
   linkedinUrl: string;
   currentRole: string;
   experience: string;
@@ -17,8 +15,6 @@ export interface SkillsExtractionParams {
 
 export const extractSkillsFromInput = async ({
   activeTab,
-  uploadType,
-  file,
   linkedinUrl,
   currentRole,
   experience,
@@ -37,19 +33,11 @@ export const extractSkillsFromInput = async ({
     
     let parsedSkills;
     
-    if (activeTab === "upload") {
-      if (uploadType === "resume" && file) {
-        setAnalysisProgress(30);
-        parsedSkills = await parseSkillsWithAI({ type: "resume", file });
-        setAnalysisProgress(60);
-      } else if (uploadType === "linkedin" && linkedinUrl) {
-        setAnalysisProgress(30);
-        parsedSkills = await parseSkillsWithAI({ type: "linkedin", url: linkedinUrl });
-        setAnalysisProgress(60);
-      } else {
-        throw new Error("No file or LinkedIn URL provided");
-      }
-    } else {
+    if (activeTab === "linkedin" && linkedinUrl) {
+      setAnalysisProgress(30);
+      parsedSkills = await parseSkillsWithAI({ type: "linkedin", url: linkedinUrl });
+      setAnalysisProgress(60);
+    } else if (activeTab === "manual") {
       // For manual entry, we'll create skills based on user input
       parsedSkills = {
         skills: about.split('.').map((skill, index) => ({
@@ -64,6 +52,8 @@ export const extractSkillsFromInput = async ({
         graduationYear: new Date().getFullYear() - parseInt(experience, 10) - 4 // Rough estimate of graduation year
       };
       setAnalysisProgress(60);
+    } else {
+      throw new Error("No LinkedIn URL provided for LinkedIn analysis");
     }
     
     // Get work history from parsed skills

@@ -1,3 +1,4 @@
+
 import Layout from "@/components/Layout";
 import { RenderStep } from "@/components/assessment/AssessmentSteps";
 import AnalysisProgress from "@/components/assessment/AnalysisProgress";
@@ -12,8 +13,6 @@ const Assessment = () => {
   const {
     activeTab,
     setActiveTab,
-    uploadType,
-    setUploadType,
     file,
     setFile,
     linkedinUrl,
@@ -56,8 +55,8 @@ const Assessment = () => {
               step={step}
               activeTab={activeTab}
               setActiveTab={setActiveTab}
-              uploadType={uploadType}
-              setUploadType={setUploadType}
+              uploadType=""
+              setUploadType={() => {}}
               file={file}
               setFile={setFile}
               linkedinUrl={linkedinUrl}
