@@ -138,17 +138,19 @@ export const useAnalysisFlow = ({
       setIsAnalyzing(true);
       setAnalysisProgress(0);
       
-      // Simulate analysis progress
+      // Fix: Use a local variable to track progress instead of a function
+      let currentProgress = 0;
       const interval = setInterval(() => {
-        setAnalysisProgress(prev => {
-          if (prev >= 100) {
-            clearInterval(interval);
-            setIsAnalyzing(false);
-            setAnalysisComplete(true);
-            return 100;
-          }
-          return prev + 5;
-        });
+        currentProgress += 5;
+        
+        if (currentProgress >= 100) {
+          clearInterval(interval);
+          setIsAnalyzing(false);
+          setAnalysisComplete(true);
+          setAnalysisProgress(100);
+        } else {
+          setAnalysisProgress(currentProgress);
+        }
       }, 150);
     }
   };
