@@ -856,12 +856,15 @@ const Assessment = () => {
       {/* Skills Extraction Modal */}
       {showSkillsModal && (
         <SkillsExtractionModal
+          open={showSkillsModal}
+          onOpenChange={setShowSkillsModal}
           skills={extractedSkills}
-          onSkillEdit={handleSkillEdit}
+          onEdit={handleSkillEdit}
           onConfirm={handleConfirmSkills}
-          onCancel={() => setShowSkillsModal(false)}
           workHistory={workHistory}
           experienceMetrics={experienceMetrics}
+          currentRole={userProfile?.currentRole}
+          education={userProfile?.education}
         />
       )}
     </Layout>
