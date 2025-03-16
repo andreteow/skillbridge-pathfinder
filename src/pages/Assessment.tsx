@@ -1,4 +1,3 @@
-
 import Layout from "@/components/Layout";
 import { RenderStep } from "@/components/assessment/AssessmentSteps";
 import AnalysisProgress from "@/components/assessment/AnalysisProgress";
@@ -6,7 +5,7 @@ import AssessmentResults from "@/components/assessment/AssessmentResults";
 import AssessmentHeader from "@/components/assessment/AssessmentHeader";
 import AssessmentControls from "@/components/assessment/AssessmentControls";
 import SkillsExtractionModal from "@/components/SkillsExtractionModal";
-import { useAssessment } from "@/hooks/useAssessment";
+import { useAssessment } from "@/hooks/assessment";
 import { sampleCareerPaths } from "@/lib/data";
 
 const Assessment = () => {
