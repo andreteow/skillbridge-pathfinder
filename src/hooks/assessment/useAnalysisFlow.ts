@@ -56,15 +56,7 @@ export const useAnalysisFlow = ({
   const runAnalysis = async () => {
     if (step === 1) {
       if (activeTab === "upload") {
-        if (uploadType === "resume" && !file) {
-          toast({
-            title: "No file selected",
-            description: "Please upload your resume to continue.",
-            variant: "destructive",
-          });
-          return;
-        }
-        if (uploadType === "linkedin" && !linkedinUrl) {
+        if (!linkedinUrl) {
           toast({
             title: "LinkedIn URL missing",
             description: "Please enter your LinkedIn profile URL to continue.",
@@ -140,14 +132,15 @@ export const useAnalysisFlow = ({
       
       // Simulate analysis progress
       const interval = setInterval(() => {
-        setAnalysisProgress(prev => {
-          if (prev >= 100) {
+        setAnalysisProgress((prev) => {
+          const newValue = prev + 5;
+          if (newValue >= 100) {
             clearInterval(interval);
             setIsAnalyzing(false);
             setAnalysisComplete(true);
             return 100;
           }
-          return prev + 5;
+          return newValue;
         });
       }, 150);
     }
