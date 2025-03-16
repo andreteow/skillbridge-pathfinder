@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import SignInPage from "./pages/SignIn";
 import SignUpPage from "./pages/SignUp";
 import Waitlist from "./pages/Waitlist";
+import Assessment from "./pages/Assessment";
 import { ClerkLoaded, ClerkLoading } from "@clerk/clerk-react";
 import { Loader2 } from "lucide-react";
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/sign-in/*" element={<SignInPage />} />
             <Route path="/sign-up/*" element={<SignUpPage />} />
             <Route path="/waitlist" element={<Waitlist />} />
+            <Route path="/assessment" element={<Assessment />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

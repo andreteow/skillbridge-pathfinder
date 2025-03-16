@@ -29,6 +29,8 @@ import {
 } from "lucide-react";
 import { sampleCareerPaths, sampleUserProfile, calculateSkillGap } from "@/lib/data";
 import { Link } from "react-router-dom";
+import { parseSkillsWithAI, convertToAppSkills } from "@/lib/openai-service";
+import { UserProfile, Skill } from "@/lib/types";
 
 const Assessment = () => {
   const [activeTab, setActiveTab] = useState<string>("upload");
@@ -45,12 +47,14 @@ const Assessment = () => {
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [analysisComplete, setAnalysisComplete] = useState<boolean>(false);
   const [analysisProgress, setAnalysisProgress] = useState<number>(0);
+  const [extractedSkills, setExtractedSkills] = useState<Skill[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   
   const { toast } = useToast();
 
   const careerReadiness = selectedCareer 
     ? calculateSkillGap(
-        sampleUserProfile.skills, 
+        userProfile?.skills || sampleUserProfile.skills, 
         sampleCareerPaths.find(cp => cp.id === selectedCareer)?.requiredSkills || []
       )
     : 0;
@@ -61,7 +65,70 @@ const Assessment = () => {
     }
   };
 
-  const runAnalysis = () => {
+  const extractSkillsFromInput = async () => {
+    try {
+      setIsAnalyzing(true);
+      setAnalysisProgress(10);
+      
+      let parsedSkills;
+      
+      if (activeTab === "upload") {
+        if (uploadType === "resume" && file) {
+          setAnalysisProgress(30);
+          parsedSkills = await parseSkillsWithAI({ type: "resume", file });
+          setAnalysisProgress(60);
+        } else if (uploadType === "linkedin" && linkedinUrl) {
+          setAnalysisProgress(30);
+          parsedSkills = await parseSkillsWithAI({ type: "linkedin", url: linkedinUrl });
+          setAnalysisProgress(60);
+        } else {
+          throw new Error("No file or LinkedIn URL provided");
+        }
+      } else {
+        // For manual entry, we'll create skills based on user input
+        parsedSkills = {
+          skills: about.split('.').map((skill, index) => ({
+            name: skill.trim(),
+            level: 50,
+            category: 'General',
+          })).filter(skill => skill.name.length > 0),
+          currentRole,
+          experience: parseInt(experience, 10),
+          education,
+        };
+        setAnalysisProgress(60);
+      }
+      
+      // Convert parsed skills to app format
+      const skills = convertToAppSkills(parsedSkills);
+      setExtractedSkills(skills);
+      
+      // Create a user profile with extracted data
+      const profile: UserProfile = {
+        id: "user-profile",
+        name: "You",
+        currentRole: parsedSkills.currentRole || currentRole,
+        experience: parsedSkills.experience || parseInt(experience, 10) || 0,
+        education: parsedSkills.education || education,
+        skills: skills,
+      };
+      
+      setUserProfile(profile);
+      setAnalysisProgress(90);
+      
+      return true;
+    } catch (error) {
+      console.error("Error extracting skills:", error);
+      toast({
+        title: "Error analyzing skills",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const runAnalysis = async () => {
     if (step === 1) {
       if (activeTab === "upload") {
         if (uploadType === "resume" && !file) {
@@ -109,7 +176,16 @@ const Assessment = () => {
       setIsAnalyzing(true);
       setAnalysisProgress(0);
       
-      // Simulate analysis progress
+      // Extract skills first (if not already done)
+      if (!userProfile) {
+        const success = await extractSkillsFromInput();
+        if (!success) {
+          setIsAnalyzing(false);
+          return;
+        }
+      }
+      
+      // Simulate remaining analysis progress
       const interval = setInterval(() => {
         setAnalysisProgress(prev => {
           if (prev >= 100) {
